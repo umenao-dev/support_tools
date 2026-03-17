@@ -1,0 +1,36 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fuseki Graph Tree Viewer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="title">Fuseki Graph Tree Viewer</div>
+        <div class="subtitle">CSV -> graph > subject > object</div>
+      </div>
+      <div class="controls">
+        <label class="file">
+          <input id="csvFile" type="file" accept=".csv,text/csv" />
+          <span>CSVを選択</span>
+        </label>
+        <input id="filter" type="search" placeholder="フィルタ: graph / subject / object / predicate  (-term で除外)" />
+      </div>
+      <div id="status" class="status">CSVを選択してください</div>
+    </header>
+
+    <main class="main">
+      <section class="tree" id="tree"></section>
+      <section class="detail" id="detail">
+        <div class="detail-empty">左のツリーから object を選択してください</div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
