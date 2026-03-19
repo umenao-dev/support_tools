@@ -27,6 +27,18 @@ uv run python .\fuseki_export.py --dataset pd3_data --dataset other_ds
 uv run python .\fuseki_export.py --datasets pd3_data,other_ds
 ```
 
+Recent graphs のみを表示（CSV/XLSXは出力しない）:
+
+```powershell
+uv run python .\fuseki_export.py --recent-only
+```
+
+件数指定:
+
+```powershell
+uv run python .\fuseki_export.py --recent-only --recent-limit 10
+```
+
 注意:
 
 - Fuseki が Windows 側で動いていて WSL から実行する場合、`127.0.0.1` ではなく Windows ホスト IP を指定してください。

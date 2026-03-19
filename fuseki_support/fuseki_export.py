@@ -3,6 +3,7 @@ import csv
 import datetime as dt
 import json
 import os
+import re
 import sys
 from typing import Dict, Iterable, List, Optional, Tuple
 
@@ -78,6 +79,30 @@ def list_graphs(endpoint: str, timeout: int) -> Tuple[bool, List[str]]:
     return default_has_triples, graphs
 
 
+def list_recent_graphs(endpoint: str, limit: int, timeout: int) -> List[str]:
+    query = (
+        "SELECT DISTINCT ?g WHERE { "
+        "GRAPH ?g { ?s ?p ?o } "
+        "FILTER(REGEX(STR(?g), \"/\\\\d{14}/?$\")) "
+        "} ORDER BY DESC(STR(?g)) "
+        f"LIMIT {limit}"
+    )
+    data = sparql_query(endpoint, query, timeout)
+    graphs = []
+    for binding in data.get("results", {}).get("bindings", []):
+        g = binding.get("g", {})
+        if "value" in g:
+            graphs.append(g["value"])
+    return graphs
+
+
+def _extract_timestamp_id(graph_uri: str) -> Optional[str]:
+    match = re.search(r"/(\d{14})/?$", graph_uri)
+    if not match:
+        return None
+    return match.group(1)
+
+
 def _term_fields(binding: Dict[str, str]) -> Tuple[str, str, str, str]:
     value = binding.get("value", "")
     term_type = binding.get("type", "")
@@ -130,6 +155,17 @@ def main() -> int:
     parser.add_argument("--out-dir", default="out", help="Output directory")
     parser.add_argument("--page-size", type=int, default=10000, help="SPARQL page size")
     parser.add_argument("--timeout", type=int, default=60, help="HTTP timeout (s)")
+    parser.add_argument(
+        "--recent-limit",
+        type=int,
+        default=5,
+        help="Show N recent graph URIs (by timestamp suffix) before export",
+    )
+    parser.add_argument(
+        "--recent-only",
+        action="store_true",
+        help="Only show recent graph URIs and skip CSV/Excel export",
+    )
     args = parser.parse_args()
 
     timestamp = dt.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -147,6 +183,29 @@ def main() -> int:
         datasets = [_normalize_dataset_name(d) for d in selected]
     else:
         datasets = get_datasets(args.base_url, args.timeout)
+
+    recent_entries = []
+    if args.recent_limit and args.recent_limit > 0:
+        for dataset in datasets:
+            endpoint = args.base_url.rstrip("/") + "/" + dataset + "/sparql"
+            graphs = list_recent_graphs(endpoint, args.recent_limit, args.timeout)
+            for graph in graphs:
+                ts = _extract_timestamp_id(graph)
+                if ts:
+                    recent_entries.append((ts, dataset, graph))
+
+        recent_entries.sort(key=lambda x: x[0], reverse=True)
+        if recent_entries:
+            print(f"Recent graphs (top {args.recent_limit})")
+            for ts, dataset, graph in recent_entries[: args.recent_limit]:
+                print(f"  {ts} | {dataset} | {graph}")
+        else:
+            print(
+                f"Recent graphs (top {args.recent_limit}) - none matched timestamp URI pattern."
+            )
+
+    if args.recent_only:
+        return 0
 
     header = [
         "dataset",

@@ -3,6 +3,7 @@ const filterInput = document.getElementById("filter");
 const treeEl = document.getElementById("tree");
 const detailEl = document.getElementById("detail");
 const statusEl = document.getElementById("status");
+const collapseAllBtn = document.getElementById("collapseAll");
 
 let dataIndex = null;
 let lastSelected = null;
@@ -11,6 +12,11 @@ csvFileInput.addEventListener("change", handleFileSelect);
 filterInput.addEventListener("input", () => {
   if (!dataIndex) return;
   renderTree(filterInput.value.trim());
+});
+collapseAllBtn.addEventListener("click", () => {
+  treeEl.querySelectorAll("details").forEach((node) => {
+    node.open = false;
+  });
 });
 
 function handleFileSelect(e) {

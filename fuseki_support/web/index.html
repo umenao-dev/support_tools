@@ -24,7 +24,13 @@
     </header>
 
     <main class="main">
-      <section class="tree" id="tree"></section>
+      <section class="tree">
+        <div class="tree-toolbar">
+          <div class="tree-title">Tree</div>
+          <button id="collapseAll" class="tree-btn" type="button">全てを閉じる</button>
+        </div>
+        <div class="tree-body" id="tree"></div>
+      </section>
       <section class="detail" id="detail">
         <div class="detail-empty">左のツリーから object を選択してください</div>
       </section>
