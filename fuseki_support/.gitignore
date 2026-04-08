@@ -10,3 +10,5 @@ wheels/
 .venv
 out/
 codex_doc/
+backup/
+
